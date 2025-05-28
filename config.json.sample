@@ -12,6 +12,10 @@
     "mdb": {
       "driver": "mysql",
       "dsn": "user:password@/dbname"
+    },
+    "msdb": {
+      "driver": "mssql",
+      "dsn": "server=localhost;user id=sa;password=yourpassword;database=testdb"
     }
   }
 }

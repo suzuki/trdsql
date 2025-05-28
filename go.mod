@@ -11,6 +11,7 @@ require (
 	github.com/lib/pq v1.10.9
 	github.com/mattn/go-runewidth v0.0.16
 	github.com/mattn/go-sqlite3 v1.14.28
+	github.com/microsoft/go-mssqldb v1.7.2
 	github.com/multiprocessio/go-sqlite3-stdlib v0.0.0-20220822170115-9f6825a1cd25
 	github.com/noborus/guesswidth v0.4.0
 	github.com/noborus/sqlss v0.1.0
@@ -26,6 +27,8 @@ require (
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/araddon/dateparse v0.0.0-20210429162001-6b43995a97de // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
+	github.com/golang-sql/civil v0.0.0-20220223132316-b832511892a9 // indirect
+	github.com/golang-sql/sqlexp v0.1.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/itchyny/timefmt-go v0.1.6 // indirect
 	github.com/jwalton/go-supportscolor v1.2.0 // indirect
@@ -36,6 +39,7 @@ require (
 	golang.org/x/crypto v0.37.0 // indirect
 	golang.org/x/exp v0.0.0-20250408133849-7e4ce0ab07d0 // indirect
 	golang.org/x/sys v0.32.0 // indirect
+	golang.org/x/text v0.24.0 // indirect
 	gonum.org/v1/gonum v0.16.0 // indirect
 	modernc.org/libc v1.63.0 // indirect
 	modernc.org/mathutil v1.7.1 // indirect

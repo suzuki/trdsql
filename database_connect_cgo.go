@@ -11,6 +11,9 @@ import (
 	// PostgreSQL driver.
 	_ "github.com/lib/pq"
 
+	// SQL Server driver.
+	_ "github.com/microsoft/go-mssqldb"
+
 	// SQLite3 driver.
 	_ "github.com/mattn/go-sqlite3"
 	// SQlite3 extension library.
@@ -26,7 +29,7 @@ func init() {
 }
 
 // Connect is connects to the database.
-// Currently supported drivers are sqlite3, mysql, postgres.
+// Currently supported drivers are sqlite3, mysql, postgres, mssql.
 // Set quote character and maxBulk depending on the driver type.
 func Connect(driver, dsn string) (*DB, error) {
 	sqlDB, err := sql.Open(driver, dsn)
@@ -50,6 +53,10 @@ func Connect(driver, dsn string) (*DB, error) {
 		db.maxBulk = 1000
 	case "postgres":
 		db.quote = "\""
+	case "mssql", "sqlserver":
+		db.quote = "["
+		db.quoteEnd = "]"
+		db.maxBulk = 1000
 	default:
 		db.quote = "\""
 	}
