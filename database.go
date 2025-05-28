@@ -31,8 +31,10 @@ type DB struct {
 	// dsn holds dsn of sql as a character string.
 	dsn string
 	// quote is the quote character(s) that varies depending on the sql driver.
-	// PostgreSQL is ("), sqlite3 and mysql is (`).
+	// PostgreSQL is ("), sqlite3 and mysql is (`), SQL Server is ([]).
 	quote string
+	// quoteEnd is the ending quote character for SQL Server ([name])
+	quoteEnd string
 	// maxBulk is the maximum number of bundles for bulk insert.
 	// The number of columns x rows is less than maxBulk.
 	maxBulk int
@@ -298,7 +300,7 @@ func (db *DB) bulkStmtOpen(ctx context.Context, table *importTable, stmt *sql.St
 }
 
 func (db *DB) insertPrepare(ctx context.Context, table *importTable) (*sql.Stmt, error) {
-	query := queryInsert(table)
+	query := db.queryInsert(table)
 	debug.Print(query)
 
 	stmt, err := db.Tx.PrepareContext(ctx, query)
@@ -309,7 +311,7 @@ func (db *DB) insertPrepare(ctx context.Context, table *importTable) (*sql.Stmt,
 }
 
 // queryInsert constructs a SQL INSERT statement.
-func queryInsert(table *importTable) string {
+func (db *DB) queryInsert(table *importTable) string {
 	var buf strings.Builder
 	buf.WriteString("INSERT INTO ")
 	buf.WriteString(table.tableName)
@@ -320,17 +322,48 @@ func queryInsert(table *importTable) string {
 		buf.WriteString(column)
 	}
 	buf.WriteString(") VALUES ")
+
+	// Use appropriate placeholder based on driver
+	placeholder := "?"
+	if db.driver == "mssql" || db.driver == "sqlserver" {
+		placeholder = "@p"
+	}
+
+	paramIndex := 1
 	buf.WriteString("(")
-	buf.WriteString("?")
+	if db.driver == "mssql" || db.driver == "sqlserver" {
+		buf.WriteString(fmt.Sprintf("%s%d", placeholder, paramIndex))
+		paramIndex++
+	} else {
+		buf.WriteString(placeholder)
+	}
 	for i := 1; i < len(table.columns); i++ {
-		buf.WriteString(",?")
+		buf.WriteString(",")
+		if db.driver == "mssql" || db.driver == "sqlserver" {
+			buf.WriteString(fmt.Sprintf("%s%d", placeholder, paramIndex))
+			paramIndex++
+		} else {
+			buf.WriteString(placeholder)
+		}
 	}
 	buf.WriteString(")")
+
 	for i := 1; i < table.count; i++ {
 		buf.WriteString(",(")
-		buf.WriteString("?")
+		if db.driver == "mssql" || db.driver == "sqlserver" {
+			buf.WriteString(fmt.Sprintf("%s%d", placeholder, paramIndex))
+			paramIndex++
+		} else {
+			buf.WriteString(placeholder)
+		}
 		for j := 1; j < len(table.columns); j++ {
-			buf.WriteString(",?")
+			buf.WriteString(",")
+			if db.driver == "mssql" || db.driver == "sqlserver" {
+				buf.WriteString(fmt.Sprintf("%s%d", placeholder, paramIndex))
+				paramIndex++
+			} else {
+				buf.WriteString(placeholder)
+			}
 		}
 		buf.WriteString(")")
 	}
@@ -351,7 +384,11 @@ func (db *DB) QuotedName(orgName string) string {
 	var buf strings.Builder
 	buf.WriteString(db.quote)
 	buf.WriteString(orgName)
-	buf.WriteString(db.quote)
+	if db.quoteEnd != "" {
+		buf.WriteString(db.quoteEnd)
+	} else {
+		buf.WriteString(db.quote)
+	}
 	return buf.String()
 }
 
